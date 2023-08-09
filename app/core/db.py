@@ -12,11 +12,6 @@ class PreBase:
         return cls.__name__.lower()
 
     id = Column(Integer, primary_key=True)
-    full_amount = Column(Integer)
-    invested_amount = Column(Integer)
-    fully_invested = Column(Boolean)
-    create_date = Column(DateTime)
-    close_date = Column(DateTime)
 
 
 Base = declarative_base(cls=PreBase)
