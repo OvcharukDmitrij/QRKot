@@ -1,13 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
-
-from app.crud.charityproject import create_charityproject, get_project_id_by_name, read_all_charityprojects_from_db
-from app.schemas.charityproject import CharityProjectCreate
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.db import get_async_session
 
-router = APIRouter(
-    prefix='/charity_project',
-    tags=['Charity project'])
+from app.core.db import get_async_session
+from app.crud.charityproject import create_charityproject, \
+    get_project_id_by_name, read_all_charityprojects_from_db
+from app.schemas.charityproject import CharityProjectCreate
+
+router = APIRouter()
 
 
 @router.post('/')
