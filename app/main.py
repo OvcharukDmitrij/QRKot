@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+
+from app.api.charityproject import router
 from app.core.config import settings
 
 app = FastAPI(
@@ -6,6 +8,4 @@ app = FastAPI(
     description=settings.app_description,
 )
 
-@app.get('/')
-def index():
-    return 'Hello, world!'
+app.include_router(router)
