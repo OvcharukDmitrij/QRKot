@@ -1,18 +1,25 @@
-from app.schemas.donation import DonationBase, DonationDB
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.donation import Donation
+
+from app.crud.base import CRUDBase
+from app.models import Donation, User
 
 
-async def create_donation(
-        new_donation: DonationBase,
-        session: AsyncSession,
-) -> Donation:
-    new_donation_data = new_donation.dict()
-    new_donation_db = Donation(**new_donation_data)
+class CRUDDonation(CRUDBase):
 
-    session.add(new_donation_db)
-    await session.commit()
-    await session.refresh(new_donation_db)
+    async def get_donations_by_user(
+            self,
+            user: User,
+            session: AsyncSession,
+    ) -> list[Donation]:
+        """Получение списка всех пожертвований пользователя."""
 
-    return new_donation_db
+        donations = await session.execute(select(Donation).where(
+            Donation.user_id == user.id)
+        )
+        donations = donations.scalars().all()
+
+        return donations
+
+
+donation_crud = CRUDDonation(Donation)
