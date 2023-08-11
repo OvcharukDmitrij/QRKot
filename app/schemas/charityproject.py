@@ -4,6 +4,8 @@ from pydantic import BaseModel, Field, PositiveInt, root_validator
 
 
 class CharityProjectBase(BaseModel):
+    """Базовая схема."""
+
     name: Optional[str] = Field(None, max_length=100)
     description: Optional[str]
     full_amount: Optional[PositiveInt]
@@ -13,12 +15,15 @@ class CharityProjectBase(BaseModel):
 
 
 class CharityProjectCreate(CharityProjectBase):
+    """Схема для создания проекта."""
+
     name: str = Field(..., max_length=100)
     description: str
     full_amount: PositiveInt
 
 
 class CharityProjectUpdate(CharityProjectBase):
+    """Схема для изменения проекта."""
 
     @root_validator
     def param_cannot_be_null(cls, values):

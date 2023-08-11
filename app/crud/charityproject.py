@@ -5,7 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.charityproject import CharityProject
-from app.schemas.charityproject import CharityProjectUpdate, CharityProjectCreate
+from app.schemas.charityproject import CharityProjectUpdate, \
+    CharityProjectCreate
 
 
 async def create_charityproject(
@@ -33,12 +34,27 @@ async def update_charityproject(
 
     obj_data = jsonable_encoder(db_project)
     update_data = project_in.dict(exclude_unset=True)
+
     for field in obj_data:
         if field in update_data:
             setattr(db_project, field, update_data[field])
+
     session.add(db_project)
     await session.commit()
     await session.refresh(db_project)
+
+    return db_project
+
+
+async def delete_charityproject(
+        db_project: CharityProject,
+        session: AsyncSession,
+) -> CharityProject:
+    """Удаление проекта."""
+
+    await session.delete(db_project)
+    await session.commit()
+
     return db_project
 
 
@@ -48,6 +64,7 @@ async def read_all_charityprojects_from_db(
     """Получение списка всех проектов."""
 
     db_projects = await session.execute(select(CharityProject))
+
     return db_projects.scalars().all()
 
 
@@ -55,7 +72,7 @@ async def get_project_id_by_name(
         project_name: str,
         session: AsyncSession,
 ) -> Optional[int]:
-    """Получение проекта(id) по его имени."""
+    """Получение id проекта по его имени."""
 
     db_project_id = await session.execute(
         select(CharityProject.id).where(
@@ -63,14 +80,15 @@ async def get_project_id_by_name(
         )
     )
     db_project_id = db_project_id.scalars().first()
+
     return db_project_id
 
 
-async def get_charityproject_by_id(
+async def get_project_by_id(
         project_id: int,
         session: AsyncSession,
 ) -> Optional[CharityProject]:
-    """Получение проекта по id."""
+    """Получение проекта по его id."""
 
     db_project = await session.execute(
         select(CharityProject).where(
@@ -78,4 +96,5 @@ async def get_charityproject_by_id(
         )
     )
     db_room = db_project.scalars().first()
+
     return db_room
