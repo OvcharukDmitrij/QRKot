@@ -7,6 +7,7 @@ from app.core.db import get_async_session
 from app.crud.charityproject import charityproject_crud
 from app.schemas.charityproject import (
     CharityProjectUpdate, CharityProjectCreate)
+from app.services.investment import invest_in_new_project
 
 router = APIRouter()
 
@@ -19,7 +20,8 @@ async def create_new_charityproject(
     """Создание нового проекта."""
 
     await check_name_duplicate(charityproject.name, session)
-    new_project = await charityproject_crud.create(charityproject, session)
+    new_project = await invest_in_new_project(charityproject, session)
+    new_project = await charityproject_crud.create(new_project, session)
 
     return new_project
 
