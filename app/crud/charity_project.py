@@ -4,25 +4,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import CRUDBase
-from app.models.charityproject import CharityProject
-from app.models import User
+from app.models import CharityProject
 
 
 class CRUDCharityProject(CRUDBase):
-
-    async def create(
-            self,
-            obj_in_data,
-            session: AsyncSession,
-            user: Optional[User] = None,
-    ):
-        if user is not None:
-            obj_in_data['user_id'] = user.id
-        db_obj = self.model(**obj_in_data)
-        session.add(db_obj)
-        await session.commit()
-        await session.refresh(db_obj)
-        return db_obj
 
     async def get_project_id_by_name(
             self,

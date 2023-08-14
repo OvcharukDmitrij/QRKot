@@ -11,12 +11,25 @@ class DonationBase(BaseModel):
     comment: Optional[str]
 
 
-class DonationDB(DonationBase):
-    """Схема для возврата данных при создании пожертвования
-    и получения списка всех пожертвований пользователя."""
+class DonationCreate(DonationBase):
+    """Схема для возврата данных при создании пожертвования."""
 
     id: int
     create_date: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class DonationDB(DonationBase):
+    """Схема для возврата данных при просмотре всех пожертвования."""
+
+    id: int
+    create_date: datetime
+    user_id: int
+    invested_amount: int
+    fully_invested: bool
+    close_date: Optional[datetime]
 
     class Config:
         orm_mode = True

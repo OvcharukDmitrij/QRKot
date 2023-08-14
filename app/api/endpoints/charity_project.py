@@ -1,32 +1,47 @@
 from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import timedelta
 
 from app.api.validators import (
     check_name_duplicate, check_charityproject_exists)
 from app.core.db import get_async_session
-from app.crud.charityproject import charityproject_crud
-from app.schemas.charityproject import (
-    CharityProjectUpdate, CharityProjectCreate)
-from app.services.investment import invest_in_new_project
+from app.core.user import current_superuser
+from app.crud.charity_project import charityproject_crud
+from app.schemas import (
+    CharityProjectUpdate, CharityProjectCreate, CharityProjectDB,
+    CharityProjectBase
+)
+from app.services.investment import calculation_in_new_project
+from app.models import CharityProject
 
 router = APIRouter()
 
 
-@router.post('/')
+@router.post(
+    '/',
+    response_model=CharityProjectDB,
+    response_model_exclude_none=True,
+    dependencies=[Depends(current_superuser)]
+)
 async def create_new_charityproject(
         charityproject: CharityProjectCreate,
         session: AsyncSession = Depends(get_async_session),
 ):
-    """Создание нового проекта."""
+    """Создание нового проекта. Только для суперюзеров."""
 
     await check_name_duplicate(charityproject.name, session)
-    new_project = await invest_in_new_project(charityproject, session)
+    new_project = await calculation_in_new_project(charityproject, session)
     new_project = await charityproject_crud.create(new_project, session)
 
     return new_project
 
 
-@router.get('/')
+@router.get(
+    '/',
+    response_model=list[CharityProjectDB],
+    response_model_exclude_none=True
+)
 async def get_all_charityprojects(
         session: AsyncSession = Depends(get_async_session),
 ):
@@ -37,19 +52,23 @@ async def get_all_charityprojects(
     return all_charityprojects
 
 
-@router.patch('/{project_id}')
+@router.patch(
+    '/{project_id}',
+    response_model=CharityProjectDB,
+    dependencies=[Depends(current_superuser)]
+)
 async def partially_update_charityproject(
         project_id: int,
         obj_in: CharityProjectUpdate,
         session: AsyncSession = Depends(get_async_session),
 ):
-    """Изменение существующего проекта."""
+    """Изменение существующего проекта. Только для суперюзеров."""
 
     db_project = await check_charityproject_exists(project_id, session)
 
     if db_project.fully_invested:
         raise HTTPException(
-            status_code=422,
+            status_code=400,
             detail='Закрытый проект нельзя редактировать!'
         )
 
@@ -69,20 +88,23 @@ async def partially_update_charityproject(
     return project
 
 
-@router.delete('/{project_id}')
+@router.delete(
+    '/{project_id}',
+    response_model=CharityProjectDB,
+    dependencies=[Depends(current_superuser)]
+)
 async def remove_charityproject(
         project_id: int,
         session: AsyncSession = Depends(get_async_session)
 ):
-    """Удаление проекта."""
+    """Удаление проекта. Только для суперюзеров."""
 
     project = await check_charityproject_exists(project_id, session)
 
     if project.invested_amount:
         raise HTTPException(
-            status_code=422,
-            detail='Нельзя удалить проект, в который уже были'
-                   'инвестированы средства, его можно только закрыть.'
+            status_code=400,
+            detail='В проект были внесены средства, не подлежит удалению!'
         )
 
     project = await charityproject_crud.remove(project, session)
