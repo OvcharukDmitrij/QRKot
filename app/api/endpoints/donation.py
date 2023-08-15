@@ -23,8 +23,8 @@ async def create_new_donation(
 ):
     """Создание нового пожертвования."""
 
-    new_project = await calculation_in_new_donation(donation, session)
-    new_donation = await donation_crud.create(new_project, session, user)
+    new_donation = await donation_crud.create(donation, session, user)
+    # new_project = await calculation_in_new_donation(donation, session)
 
     return new_donation
 

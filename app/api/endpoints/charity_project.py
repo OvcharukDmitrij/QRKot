@@ -1,7 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import timedelta
 
 from app.api.validators import (
     check_name_duplicate, check_charityproject_exists)
@@ -9,11 +7,9 @@ from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charity_project import charityproject_crud
 from app.schemas import (
-    CharityProjectUpdate, CharityProjectCreate, CharityProjectDB,
-    CharityProjectBase
+    CharityProjectUpdate, CharityProjectCreate, CharityProjectDB
 )
 from app.services.investment import calculation_in_new_project
-from app.models import CharityProject
 
 router = APIRouter()
 
@@ -31,8 +27,8 @@ async def create_new_charityproject(
     """Создание нового проекта. Только для суперюзеров."""
 
     await check_name_duplicate(charityproject.name, session)
-    new_project = await calculation_in_new_project(charityproject, session)
-    new_project = await charityproject_crud.create(new_project, session)
+    new_project = await charityproject_crud.create(charityproject, session)
+    # new_project = await calculation_in_new_project(charityproject, session)
 
     return new_project
 
