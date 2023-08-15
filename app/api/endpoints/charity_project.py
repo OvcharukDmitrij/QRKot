@@ -6,10 +6,11 @@ from app.api.validators import (
 from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charity_project import charityproject_crud
+from app.models import Donation
 from app.schemas import (
     CharityProjectUpdate, CharityProjectCreate, CharityProjectDB
 )
-from app.services.investment import calculation_in_new_project
+from app.services.investment import calculation
 
 router = APIRouter()
 
@@ -28,7 +29,7 @@ async def create_new_charityproject(
 
     await check_name_duplicate(charityproject.name, session)
     new_project = await charityproject_crud.create(charityproject, session)
-    # new_project = await calculation_in_new_project(charityproject, session)
+    await calculation(new_project, Donation, session)
 
     return new_project
 
