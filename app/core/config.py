@@ -9,6 +9,7 @@ class Settings(BaseSettings):
                             ' фонда поддержки котиков')
     database_url: str = 'sqlite+aiosqlite:///./fastapi.db'
     secret: str = 'SECRET'
+    lifetime_seconds: int = 3600
     first_superuser_email: Optional[EmailStr] = None
     first_superuser_password: Optional[str] = None
 
