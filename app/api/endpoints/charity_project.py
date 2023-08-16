@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.validators import (
@@ -65,20 +65,19 @@ async def partially_update_charityproject(
 
     if db_project.fully_invested:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail='Закрытый проект нельзя редактировать!'
         )
 
     if obj_in.name is not None:
         await check_name_duplicate(obj_in.name, session)
 
-    if obj_in.full_amount is not None:
-        if obj_in.full_amount < db_project.invested_amount:
-            raise HTTPException(
-                status_code=422,
-                detail='Нельзя установить требуемую'
-                       ' сумму меньше уже вложенной!'
-            )
+    if obj_in.full_amount and obj_in.full_amount < db_project.invested_amount:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail='Нельзя установить требуемую'
+                   ' сумму меньше уже вложенной!'
+        )
 
     project = await charityproject_crud.update(db_project, obj_in, session)
 
@@ -100,7 +99,7 @@ async def remove_charityproject(
 
     if project.invested_amount:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail='В проект были внесены средства, не подлежит удалению!'
         )
 

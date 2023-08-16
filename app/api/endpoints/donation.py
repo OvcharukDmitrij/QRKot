@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_async_session
@@ -67,7 +67,7 @@ async def update_donation():
     """Изменение существующего пожертвования запрещено."""
 
     raise HTTPException(
-        status_code=404,
+        status_code=status.HTTP_404_NOT_FOUND,
         detail='Запрещено редактировать пожертвования!'
     )
 
@@ -77,6 +77,6 @@ async def remove_donation():
     """Удаление существующего пожертвования запрещено."""
 
     raise HTTPException(
-        status_code=404,
+        status_code=status.HTTP_404_NOT_FOUND,
         detail='Запрещено удалять пожертвования!'
     )
